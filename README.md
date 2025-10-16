@@ -17,7 +17,7 @@ A simple and intuitive **Kanban Board** system that helps users organize tasks v
 
 ## ⚙️ Installation
 ```bash
-git clone https://github.com/yourusername/kanban-board.git
+git clone https://github.com/naruemon09/Kanban-board.git
 cd kanban-board
 npm install
 npm run dev
