@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int            @id @default(autoincrement())
+  email       String         @unique
+  password    String
+  firstname   String
+  lastname    String
+  picture     String?
+  createdAt   DateTime       @default(now())
+  updateAt    DateTime       @updatedAt
+  boardMember Board_Member[]
+  board       Board[]
+  taskMember  Task_Member[]
+}
+
+model Board {
+  id          Int            @id @default(autoincrement())
+  boardName   String
+  createdBy   User           @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdById Int
+  createdAt   DateTime       @default(now())
+  updateAt    DateTime       @updatedAt
+  boardMember Board_Member[]
+  column      Column[]
+}
+
+model Column {
+  id         Int      @id @default(autoincrement())
+  columnName String
+  board      Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId    Int
+  createdAt  DateTime @default(now())
+  updateAt   DateTime @updatedAt
+  task       Task[]
+}
+
+model Task {
+  id          Int           @id @default(autoincrement())
+  taskName    String
+  description String
+  column      Column        @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  columnId    Int
+  createdAt   DateTime      @default(now())
+  updateAt    DateTime      @updatedAt
+  taskMember  Task_Member[]
+  taskTag     Task_Tag[]
+}
+
+model Tag {
+  id        Int        @id @default(autoincrement())
+  tagName   String     @unique
+  createdAt DateTime   @default(now())
+  taskTag   Task_Tag[]
+}
+
+model Board_Member {
+  id       Int      @id @default(autoincrement())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int
+  board    Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId  Int
+  joinedAt DateTime @default(now())
+}
+
+model Task_Member {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId     Int
+  assignedAt DateTime @default(now())
+}
+
+model Task_Tag {
+  id     Int   @id @default(autoincrement())
+  Task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId Int
+  Tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId  Int
+  createdAt   DateTime      @default(now())
+}

@@ -1,6 +1,7 @@
 <script>
 import axios from 'axios';
 import CreateTask from './CreateTask.vue';
+import { readBoard } from '../api/board';
 export default {
     components: { CreateTask },
     data() {
@@ -15,22 +16,20 @@ export default {
 
     async mounted() {
         try {
-            const storedUser = JSON.parse(localStorage.getItem('User'))
-            const email = storedUser.email
-            const responseColumn = await axios.get('http://localhost:3000/column', {
-                params: { email }
-            });
-            const responseTask = await axios.get('http://localhost:3000/task', {
-                params: { email }
-            });
-            this.column = responseColumn.data.column
-            this.task = responseTask.data.task
-            this.column = responseColumn.data.column.map(c => ({
+            const token = localStorage.getItem('token')
+            const id = this.$route.params.id
+            const responseColumn = await readBoard(token, id)
+            const responseTask = await listBoard(token)
+            console.log('responseColumn',responseColumn)
+            console.log('responseTask',responseTask)
+            this.column = responseColumn.data
+            this.task = responseTask.data
+            this.column = responseColumn.data.map(c => ({
                 ...c,
                 isEditing: false,
                 newName: ''
             }));
-            this.task = responseTask.data.task.map(t => ({
+            this.task = responseTask.data.map(t => ({
                 ...t,
                 isEditing: false,
                 newName: ''
@@ -174,6 +173,13 @@ export default {
         <div class="fixed inset-0 -z-10">
             <img src="\src\assets\pastel-pink-blue.jpg" class="w-full h-full object-cover" />
         </div>
+        
+        <div class="w-full max-w-2xl my-8">
+            <div class="rounded-2xl bg-white shadow-xl">
+                <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900"> {{ column.boardId }}</h5>
+            </div>
+        </div>
+
         <div class="absolute justify-start m-8">
             <RouterLink to="/board"
                 class="px-6 py-3 w-20 h-12 text-white text-center text-base font-semibold leading-6 rounded-full hover:bg-red-800 transition-all duration-700 bg-red-600 shadow-sm">
