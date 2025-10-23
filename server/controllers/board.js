@@ -45,7 +45,7 @@ exports.read = async (req, res) => {
         id: Number(id),
       },
     });
-    res.jso(board);
+    res.json(board);
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Server error" });
@@ -69,9 +69,13 @@ exports.remove = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
+    const { id } = req.params;
     const { boardName } = req.body;
 
     const board = await prisma.board.update({
+      where: {
+        id: Number(id),
+      },
       data: {
         boardName: boardName,
       },

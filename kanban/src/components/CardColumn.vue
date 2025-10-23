@@ -1,255 +1,160 @@
 <template>
-  <div class="relative h-screen overflow-y-auto font-inter">
-        <div class="w-full max-w-2xl my-8">
-            <div class="rounded-2xl bg-white shadow-xl">
-                <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900"> {{ column.boardId }}</h5>
-            </div>
+  <div class="bg-white rounded-lg shadow-sm p-4">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+        <h2 class="text-lg font-semibold text-gray-800">
+          {{ column.columnName }}
+          <span class="ml-2 text-sm text-gray-500">{{ column.length }}</span>
+        </h2>
+        <div class="absolute top-4 right-4 flex gap-2 z-10">
+          <button
+            @click="editing(column)"
+            class="p-2 bg-white/90 backdrop-blur-sm rounded-lg hover:bg-indigo-50 transition-all duration-200 shadow-sm hover:shadow-md group/edit"
+            title="Edit Column"
+          >
+            <svg
+              class="w-5 h-5 text-gray-700 group-hover/edit:text-indigo-600 transition-colors"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+              />
+            </svg>
+          </button>
+          <button
+            @click="deleteColumn(column)"
+            class="p-2 bg-white/90 backdrop-blur-sm rounded-lg hover:bg-red-50 transition-all duration-200 shadow-sm hover:shadow-md group/delete"
+            title="Delete Column"
+          >
+            <svg
+              class="w-5 h-5 text-gray-700 group-hover/delete:text-red-600 transition-colors"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </button>
         </div>
+      </div>
 
-        <div class="absolute justify-start m-8">
-            <RouterLink to="/board"
-                class="px-6 py-3 w-20 h-12 text-white text-center text-base font-semibold leading-6 rounded-full hover:bg-red-800 transition-all duration-700 bg-red-600 shadow-sm">
-                BACK</RouterLink>
-        </div>
-
-        <div class="flex justify-end m-6">
-            <input type="text" v-model="column_name"
-                class="w-80 h-12 text-gray-900 placeholder:text-gray-400 text-lg font-normal leading-7 rounded-full border-gray-300 border shadow-sm focus:outline-none px-4 mb-1 bg-gray-200 mr-2"
-                placeholder="New Column">
-            <button @click="createColumn"
-                class="w-20 h-12 text-white text-center text-base font-semibold leading-6 rounded-full hover:bg-indigo-800 transition-all duration-700 bg-indigo-600 shadow-sm mb-6">ADD</button>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 m-6">
-            <div v-for="columnItem in column.filter(t => t.board_name === $route.params.board_name)" 
-                :key="columnItem.column_name"
-                class="block p-6 bg-gray-100 rounded-lg shadow-sm">
-                <div class="flex items-center justify-between mb-2">
-                    <template v-if="columnItem.isEditing">
-                        <input v-model="columnItem.newName" class="border px-2 py-1 rounded mr-2" />
-                        <button @click="saveEditColumn(columnItem)"
-                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none">Save</button>
-                    </template>
-                    <template v-else>
-                        <h5 class="text-xl font-bold tracking-tight text-gray-900">{{ columnItem.column_name }}</h5>
-                        <div class="flex justify-end gap-3">
-                            <button @click="editingColume(columnItem)">
-                                <img class="h-5 w-5" src="\src\assets\edit-270.png" />
-                            </button>
-                            <button @click="deleteColumn(columnItem)">
-                                <img class="h-4 w-auto " src="\src\assets\106830.png" />
-                            </button>
-                        </div>
-                    </template>
-                </div>
-                <div v-for="taskItem in task.filter(t => t.column_name === columnItem.column_name)"
-                    :key="taskItem.task_name" class="block p-4 my-2 bg-white rounded shadow-sm">
-                    <div class="flex justify-between items-center">
-                        <template v-if="taskItem.isEditing">
-                            <input v-model="taskItem.newName" class="border px-2 py-1 rounded mr-2 w-full" />
-                            <button @click="saveEditTask(taskItem)"
-                                class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none">Save</button>
-                        </template>
-                        <template v-else>
-                            <h5 class="text-sm font-medium text-gray-800">{{ taskItem.task_name }}</h5>
-                            <div class="flex justify-end gap-3">
-                                <button @click="editingTask(taskItem)">
-                                    <img class="h-5 w-5" src="\src\assets\edit-270.png" />
-                                </button>
-                                <button @click="deleteTask(taskItem)">
-                                    <img class="h-4 w-auto " src="\src\assets\106830.png" />
-                                </button>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-                <button @click="onToggle(columnItem.column_name)"
-                    class="w-full h-8 text-white text-center text-xs font-semibold leading-6 rounded-full hover:bg-indigo-800 transition-all duration-700 bg-indigo-600 shadow-sm mb-6">+
-                    New Task</button>
-                <CreateTask v-if="isOpen && selectedColumnName === columnItem.column_name" :show="isOpen"
-                    @close="onClose" :column_name="columnItem.column_name" />
-            </div>
-        </div>
+      <div class="flex gap-2">
+        <button
+          @click="emit('openTaskModal', column.id)"
+          class="text-orange-500 hover:text-orange-600"
+        >
+          <i class="fa fa-plus"></i>
+        </button>
+        <button
+          @click="emit('deleteColumn', column.id)"
+          class="text-gray-400 hover:text-red-500"
+        >
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
     </div>
+
+    <div class="space-y-3">
+      <TaskCard
+        v-for="task in column.tasks"
+        :key="task.id"
+        :task="task"
+        :columnId="column.id"
+        @deleteTask="emit('deleteTask', column.id, task.id)"
+      />
+    </div>
+
+    <button
+      @click="emit('openTaskModal', column.id)"
+      class="w-full mt-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-purple-600 hover:border-purple-400 hover:bg-purple-50 flex items-center justify-center gap-2 transition-colors"
+    >
+      <svg
+        class="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 4v16m8-8H4"
+        />
+      </svg>
+      <span>Add Task</span>
+    </button>
+  </div>
 </template>
 
 <script>
-import axios from "axios";
-import CreateTask from "./CreateTask.vue";
-import { readBoard } from "../api/board";
-export default {
-  components: { CreateTask },
-  data() {
-    return {
-      column_name: "",
-      isOpen: false,
-      column: [],
-      task: [],
-      selectedColumnName: "",
-    };
-  },
+import { removeColumn, updateColumn } from "../api/column";
+import { toast } from "vue3-toastify";
 
-  async mounted() {
-    try {
-      const token = localStorage.getItem("token");
-      const id = this.$route.params.id;
-      const responseColumn = await readBoard(token, id);
-      const responseTask = await listBoard(token);
-      console.log("responseColumn", responseColumn);
-      console.log("responseTask", responseTask);
-      this.column = responseColumn.data;
-      this.task = responseTask.data;
-      this.column = responseColumn.data.map((c) => ({
-        ...c,
-        isEditing: false,
-        newName: "",
-      }));
-      this.task = responseTask.data.map((t) => ({
-        ...t,
-        isEditing: false,
-        newName: "",
-      }));
-    } catch (error) {
-      console.error(error);
-    }
-  },
+export default {
+  props: ["column"],
+  emits: ["updated"],
 
   methods: {
-    onToggle(columnName) {
-      this.selectedColumnName = columnName;
-      this.isOpen = !this.isOpen;
-    },
-    onClose() {
-      this.isOpen = false;
-      this.selectedColumnName = "";
-    },
-    editingColume(columnItem) {
-      columnItem.isEditing = true;
-      columnItem.newName = columnItem.column_name;
-    },
-    editingTask(taskItem) {
-      taskItem.isEditing = true;
-      taskItem.newName = taskItem.task_name;
+    editing(column) {
+      column.isEditing = true;
+      column.newName = column.columnName;
     },
 
-    async createColumn() {
+    cancelEdit(column) {
+      column.isEditing = false;
+      column.newName = "";
+    },
+
+    async saveEdit(column) {
       try {
-        const storedUser = JSON.parse(localStorage.getItem("User"));
-        const email = storedUser.email;
-        const response = await axios.post(
-          "http://localhost:3000/createColumn",
-          {
-            column_name: this.column_name,
-            board_name: this.$route.params.board_name,
-          },
-          {
-            params: { email },
-          }
-        );
-        if (response.data.res === 0) {
-          this.column = "";
-          window.location.reload();
+        console.log(column);
+        const token = localStorage.getItem("token");
+        const response = await updateColumn(token, column.id, {
+          columnName: column.newName,
+        });
+
+        if (response.status === 200) {
+          column.columnName = column.newName;
+          column.isEditing = false;
+          toast.success("Column updated successfully! 🎉");
+          this.$emit("updated");
         } else {
-          this.error = response.data.errorMessage;
+          toast.error(response.data.errorMessage || "Failed to update column");
         }
       } catch (error) {
         console.error(error);
+        toast.error("Failed to update column. Please try again.");
       }
     },
-    async saveEditColumn(columnItem) {
+
+    async deleteColumn(column) {
+      if (!confirm(`Are you sure you want to delete "${column.columnName}"?`))
+        return;
+
       try {
-        const storedUser = JSON.parse(localStorage.getItem("User"));
-        const email = storedUser.email;
-        const response = await axios.put(
-          `http://localhost:3000/column/${columnItem.column_name}`,
-          {
-            new_column_name: columnItem.newName,
-            board_name: this.$route.params.board_name,
-          },
-          {
-            params: { email },
-          }
-        );
-        if (response.data.res === 0) {
-          columnItem.column_name = columnItem.newName;
-          columnItem.isEditing = false;
-          window.location.reload();
+        const token = localStorage.getItem("token");
+        const response = await removeColumn(token, column.id);
+
+        if (response.status === 200) {
+          toast.success("Column deleted successfully! 🗑️");
+          this.$emit("updated");
         } else {
-          this.error = response.data.errorMessage;
+          toast.error(response.data.errorMessage || "Failed to delete column");
         }
       } catch (error) {
         console.error(error);
-      }
-    },
-    async saveEditTask(taskItem) {
-      try {
-        const storedUser = JSON.parse(localStorage.getItem("User"));
-        const email = storedUser.email;
-        const response = await axios.put(
-          `http://localhost:3000/task/${taskItem.task_name}`,
-          {
-            new_task_name: taskItem.newName,
-            column_name: taskItem.column_name,
-          },
-          {
-            params: { email },
-          }
-        );
-        if (response.data.res === 0) {
-          taskItem.task_name = taskItem.newName;
-          taskItem.isEditing = false;
-          window.location.reload();
-        } else {
-          this.error = response.data.errorMessage;
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    async deleteColumn(columnItem) {
-      try {
-        this.newName = null;
-        const storedUser = JSON.parse(localStorage.getItem("User"));
-        const email = storedUser.email;
-        const response = await axios.delete(
-          `http://localhost:3000/column/${columnItem.column_name}`,
-          {
-            params: {
-              email,
-              board_name: this.$route.params.board_name,
-            },
-          }
-        );
-        if (response.data.res === 0) {
-          window.location.reload();
-        } else {
-          this.error = response.data.errorMessage;
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    async deleteTask(taskItem) {
-      try {
-        this.newName = null;
-        const storedUser = JSON.parse(localStorage.getItem("User"));
-        const email = storedUser.email;
-        const response = await axios.delete(
-          `http://localhost:3000/task/${taskItem.task_name}`,
-          {
-            params: {
-              email,
-              column_name: taskItem.column_name,
-            },
-          }
-        );
-        if (response.data.res === 0) {
-          window.location.reload();
-        } else {
-          this.error = response.data.errorMessage;
-        }
-      } catch (error) {
-        console.error(error);
+        toast.error("Failed to delete column. Please try again.");
       }
     },
   },

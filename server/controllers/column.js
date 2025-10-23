@@ -2,18 +2,12 @@ const prisma = require("../config/prisma");
 
 exports.create = async (req, res) => {
   try {
-    const { column_name } = req.body;
-
-    const user = await prisma.user.findFirst({
-      where: { id: Number(req.user.id) },
-    });
+    const { column_name , board_id} = req.body;
 
     const column = await prisma.column.create({
       data: {
         columnName: column_name,
-        createdBy: {
-          connect: { id: user.id },
-        },
+        boardId: Number(board_id),
       },
     });
 
@@ -26,8 +20,11 @@ exports.create = async (req, res) => {
 
 exports.list = async (req, res) => {
   try {
+    const { id } = req.params;
     const column = await prisma.column.findMany({
-      where: { createdById: Number(req.user.id) },
+      where: { 
+        boardId: Number(id) 
+      },
     });
 
     res.json(column);
@@ -60,7 +57,7 @@ exports.remove = async (req, res) => {
         id: Number(id),
       },
     });
-    res.send(column);
+    res.json(column);
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Server error" });
@@ -69,11 +66,15 @@ exports.remove = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const { columnName } = req.body;
+    const { id } = req.params;
+    const { column_name } = req.body;
 
     const column = await prisma.column.update({
+      where: {
+        id: Number(id),
+      },
       data: {
-        columnName: columnName,
+        columnName: column_name,
       },
     });
 

@@ -13,13 +13,13 @@
         class="relative z-10 w-full max-w-md sm:max-w-lg md:max-w-xl bg-white rounded-2xl shadow-2xl p-6 sm:p-8 text-center"
       >
         <div class="text-center">
-          <h2 class="text-2xl font-bold py-4">Create New Board</h2>
+          <h2 class="text-2xl font-bold py-4">Invite member to the board</h2>
           <div class="mt-6">
             <input
               type="text"
-              v-model="form.board_name"
+              v-model="form.email"
               class="w-full h-12 text-gray-900 placeholder:text-gray-400 text-lg font-normal leading-7 rounded-full border-gray-300 border shadow-sm focus:outline-none px-4 mb-1"
-              placeholder="New Board"
+              placeholder="Member@example.com"
             />
           </div>
         </div>
@@ -32,10 +32,10 @@
             Close
           </button>
           <button
-            @click="createBoard"
+            @click="member"
             class="bg-indigo-600 px-5 py-2 text-sm shadow-sm font-medium tracking-wider border text-white rounded-md hover:bg-indigo-800"
           >
-            Save
+            Add Member
           </button>
         </div>
       </div>
@@ -44,7 +44,7 @@
 </template>
 
 <script>
-import { createBoard } from "../api/board";
+import { addMember } from "../api/user";
 export default {
   props: ["show"],
   emits: ["close"],
@@ -52,16 +52,19 @@ export default {
   data() {
     return {
       form: {
-        board_name: "",
+        email: "",
+        board_id: "",
       },
     };
   },
 
   methods: {
-    async createBoard() {
+    async member() {
       try {
         const token = localStorage.getItem("token");
-        const response = await createBoard(token, this.form);
+        const id = this.$route.params.id;
+        this.form.board_id = id;
+        const response = await addMember(token, this.form);
         this.$emit("close");
         window.location.reload();
         console.log(response.data);
