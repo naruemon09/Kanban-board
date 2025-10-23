@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen">
+  <div class="min-h-screen bg-gray-50">
     <nav class="bg-white shadow-sm">
       <div class="mx-auto max-w-8xl px-2">
         <div class="relative flex h-16 items-center justify-between">

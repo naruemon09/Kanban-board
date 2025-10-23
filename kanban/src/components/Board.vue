@@ -1,48 +1,55 @@
 <template>
-  <div class="relative h-screen overflow-y-auto font-inter">
-    <div class="fixed inset-0 -z-10">
-      <img src="\src\assets\pastel-pink-blue.jpg" class="w-full h-full object-cover" />
-    </div>
-
-    <section class="p-6">
-      <div class="flex justify-end mb-6">
-        <button @click="onToggle"
-          class="px-6 h-12 text-white font-semibold rounded-full bg-indigo-600 hover:bg-indigo-800 transition-all duration-300 shadow-sm">
-          + New Board
-        </button>
+  <div class="relative min-h-screen overflow-y-auto font-inter bg-gradient-to-br from-gray-50 to-gray-100">
+    <section class="p-4 sm:p-6 lg:p-8">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">My Boards</h1>
+          <p class="text-gray-600 mt-1">Manage and organize your kanban boards</p>
+        </div>
+        <div v-if="board.length > 0">
+          <button
+            @click="onToggle"
+            class="px-6 py-3 text-white font-semibold rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            New Board
+          </button>
+        </div>
       </div>
 
       <CreateBoard :show="isOpen" @close="onClose" />
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        <div v-for="boardItem in board" :key="boardItem.board_name"
-          class="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100">
-          <div class="flex justify-end">
-            <button @click="deleteBoard(boardItem)" class="text-sm text-blue-600 hover:underline ml-2"><img
-                class="h-6 w-auto" src="\src\assets\106830.png" /></button>
-          </div>
+      <div v-if="board.length === 0" class="flex flex-col items-center justify-center py-20">
+        <div class="w-32 h-32 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mb-6">
+          <svg class="w-16 h-16 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
+          </svg>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-900 mb-2">No boards yet</h3>
+        <p class="text-gray-600 mb-6">Create your first board to get started</p>
+        <button
+          @click="onToggle"
+          class="px-6 py-3 text-white font-semibold rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg"
+        >
+          Create First Board
+        </button>
+      </div>
 
-          <div class="flex items-center gap-2">
-            <template v-if="boardItem.isEditing">
-              <input v-model="boardItem.newName" class="border px-2 py-1 rounded" />
-              <button @click="saveEdit(boardItem)"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none">Save</button>
-            </template>
-            <template v-else>
-              <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900"> {{ boardItem.boardName }}</h5>
-              <button @click="editing(boardItem)" class="text-sm text-blue-600 hover:underline ml-2"><img
-                  class="h-10 w-auto" src="\src\assets\edit-270.png" /></button>
-            </template>
-          </div>
-          <RouterLink :to="`/column/${boardItem.id}`"
-            class=" mt-6 inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 ">
-            View
-            <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-              fill="none" viewBox="0 0 14 10">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M1 5h12m0 0L9 1m4 4L9 9" />
-            </svg>
-          </RouterLink>
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div
+          v-for="boardItem in board"
+          :key="boardItem.id"
+          class="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
+          :style="{ backgroundColor: boardItem.color }"
+        >
+          <CardBoard :board="boardItem" @updated="loadBoards" />
         </div>
       </div>
     </section>
@@ -50,89 +57,57 @@
 </template>
 
 <script>
-import axios from 'axios';
-import CreateBoard from './CreateBoard.vue';
-import { listBoard } from '../api/board';
+import CreateBoard from "./CreateBoard.vue";
+import CardBoard from "./CardBoard.vue";
+import { listBoard } from "../api/board";
+import { toast } from "vue3-toastify";
+
 export default {
-  components: { CreateBoard },
+  components: { CreateBoard, CardBoard },
   data() {
     return {
       isOpen: false,
       board: [],
+      pastelColors: [
+        "#FFE5E5", "#FFE5CC", "#FFFFCC", "#E5FFCC", "#CCFFE5",
+        "#CCF5FF", "#CCE5FF", "#E5CCFF", "#FFCCF5", "#FFE5F5",
+        "#F5E5FF", "#E5F5FF", "#FFF5E5", "#F5FFE5", "#FFE5EB"
+      ],
     };
   },
 
   async mounted() {
-    try {
-      const token = localStorage.getItem('token')
-      const response = await listBoard(token)
-      console.log(response)
-      this.board = response.data
-      this.board = response.data.map(b => ({
-        ...b,
-        isEditing: false,
-        newName: ''
-      }));
-
-    } catch (error) {
-      console.error(error);
-    }
+    this.loadBoards();
   },
 
   methods: {
+    async loadBoards() {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await listBoard(token);
+        console.log(response)
+        this.board = response.data.map(b => ({
+          ...b,
+          color: this.getRandomPastelColor(),
+        }));
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to load boards", { position: "top-right" });
+      }
+    },
+
+    getRandomPastelColor() {
+      return this.pastelColors[Math.floor(Math.random() * this.pastelColors.length)];
+    },
+
     onToggle() {
       this.isOpen = !this.isOpen;
     },
+
     onClose() {
       this.isOpen = false;
+      this.loadBoards();
     },
-    editing(boardItem) {
-      boardItem.isEditing = true;
-      boardItem.newName = boardItem.board_name;
-    },
-    async saveEdit(boardItem) {
-      try {
-        this.newName = null
-        const storedUser = JSON.parse(localStorage.getItem('User'))
-        const email = storedUser.email
-        const response = await axios.put(`http://localhost:3000/board/${boardItem.board_name}`, {
-          new_board_name: boardItem.newName,
-        }, {
-          params: { email }
-        });
-        if (response.data.res === 0) {
-          this.$emit('close')
-          boardItem.board_name = boardItem.newName;
-          boardItem.isEditing = false;
-          window.location.reload()
-        } else {
-          this.error = response.data.errorMessage
-        }
-
-      } catch (error) {
-        console.error(error);
-      }
-    },
-
-    async deleteBoard(boardItem) {
-      try {
-        this.newName = null
-        const storedUser = JSON.parse(localStorage.getItem('User'))
-        const email = storedUser.email
-        const response = await axios.delete(`http://localhost:3000/board/${boardItem.board_name}`, {
-          params: { email }
-        });
-        if (response.data.res === 0) {
-          window.location.reload()
-        } else {
-          this.error = response.data.errorMessage
-        }
-
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-  }
-}
+  },
+};
 </script>
