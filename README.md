@@ -4,8 +4,8 @@ A simple and intuitive **Kanban Board** system that helps users organize tasks v
 
 ## 🚀 Features
 - Create, edit, and delete boards
-- Add, move, and delete column
-- Add, move, and delete tasks  
+- Add, edit, and delete column
+- Add, edit, move, and delete tasks  
 - Drag & drop support for task management  
 - RESTful API for frontend integration  
 - Data persistence using MySQL 
