@@ -67,14 +67,14 @@ exports.remove = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { column_name } = req.body;
+    const { columnName } = req.body;
 
     const column = await prisma.column.update({
       where: {
         id: Number(id),
       },
       data: {
-        columnName: column_name,
+        columnName: columnName,
       },
     });
 

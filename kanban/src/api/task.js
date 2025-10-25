@@ -8,8 +8,8 @@ export const createTask = async (token, form) => {
   });
 };
 
-export const listTask = async (token, id) => {
-  return await axios.get(`http://localhost:3000/api/listTask/${id}`, {
+export const listTask = async (token) => {
+  return await axios.get(`http://localhost:3000/api/listTask`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

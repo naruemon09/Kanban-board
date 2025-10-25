@@ -18,7 +18,7 @@
             <input
               type="text"
               v-model="form.column_name"
-              class="w-full h-12 text-gray-900 placeholder:text-gray-400 text-lg font-normal leading-7 rounded-full border-gray-300 border shadow-sm focus:outline-none px-4 mb-1"
+              class="w-full h-12 text-gray-900 placeholder:text-gray-400 text-lg border border-gray-300 rounded-full px-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="New Column"
             />
           </div>

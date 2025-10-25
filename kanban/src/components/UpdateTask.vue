@@ -13,20 +13,24 @@
         class="relative z-10 w-full max-w-md sm:max-w-lg md:max-w-xl bg-white rounded-2xl shadow-2xl p-6 sm:p-8 text-center max-h-[80vh] overflow-y-auto"
       >
         <div class="text-center">
-          <h2 class="text-2xl font-bold py-4">Create New Task</h2>
+          <h2 class="text-2xl font-bold py-4">Update Task</h2>
 
           <div class="mb-4 text-left">
-            <label class="block text-gray-700 font-medium mb-1">Task Name</label>
+            <label class="block text-gray-700 font-medium mb-1"
+              >Task Name</label
+            >
             <input
               type="text"
-              v-model="form.task_name"
+              v-model="form.taskName"
               class="w-full h-12 text-gray-900 placeholder:text-gray-400 text-lg border border-gray-300 rounded-full px-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Enter task name"
             />
           </div>
 
           <div class="mb-4 text-left">
-            <label class="block text-gray-700 font-medium mb-1">Description</label>
+            <label class="block text-gray-700 font-medium mb-1"
+              >Description</label
+            >
             <textarea
               v-model="form.description"
               rows="3"
@@ -38,13 +42,13 @@
           <div class="mb-4 text-left">
             <label class="block text-gray-700 font-medium mb-1">Tags</label>
             <div
-              v-for="(tag, index) in form.tagName"
+              v-for="(tag, index) in form.tags"
               :key="index"
               class="flex items-center gap-2 mb-2"
             >
               <input
                 type="text"
-                v-model="form.tagName[index]"
+                v-model="form.tags[index]"
                 class="flex-1 h-10 text-gray-900 placeholder:text-gray-400 text-md border border-gray-300 rounded-full px-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="e.g., Design, Bug"
               />
@@ -54,7 +58,7 @@
                 title="Remove tag"
               >
                 <svg
-                  class="w-5 h-5 text-red-500 transition-colors"
+                  class="w-5 h-5 text-red-500 group-hover/delete:text-red-600 transition-colors"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -77,16 +81,18 @@
           </div>
 
           <div class="mb-4 text-left relative">
-            <label class="block text-gray-700 font-medium mb-1">Assign To (Emails)</label>
+            <label class="block text-gray-700 font-medium mb-1"
+              >Assign To (Emails)</label
+            >
             <div
-              v-for="(email, index) in form.email"
+              v-for="(email, index) in form.members"
               :key="index"
               class="flex flex-col mb-2 relative"
             >
               <div class="flex items-center gap-2">
                 <input
                   type="text"
-                  v-model="form.email[index]"
+                  v-model="form.members[index]"
                   @input="handleInput(index)"
                   class="flex-1 h-10 text-gray-900 placeholder:text-gray-400 text-md border border-gray-300 rounded-full px-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="user@example.com"
@@ -97,7 +103,7 @@
                   title="Remove email"
                 >
                   <svg
-                    class="w-5 h-5 text-red-500 transition-colors"
+                    class="w-5 h-5 text-red-500 group-hover/delete:text-red-600 transition-colors"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -111,7 +117,6 @@
                   </svg>
                 </button>
               </div>
-
               <ul
                 v-if="suggestions.length > 0 && activeEmailIndex === index"
                 class="absolute left-0 right-0 bg-white/90 backdrop-blur-md border border-gray-200 rounded-xl shadow-lg mt-2 max-h-56 overflow-y-auto z-20"
@@ -122,7 +127,9 @@
                   @click="selectUser(user.email)"
                   class="px-4 py-3 text-left hover:bg-indigo-50 hover:shadow-sm cursor-pointer transition-all duration-200 border-b last:border-b-0 border-gray-100 flex flex-col"
                 >
-                  <span class="text-base font-semibold text-gray-900">{{ user.firstname }} {{ user.lastname }}</span>
+                  <span class="text-base font-semibold text-gray-900"
+                    >{{ user.firstname }} {{ user.lastname }}</span
+                  >
                   <span class="text-sm text-gray-600">{{ user.email }}</span>
                 </li>
               </ul>
@@ -144,7 +151,7 @@
             Close
           </button>
           <button
-            @click="createTask"
+            @click="updateTask"
             class="bg-indigo-600 px-5 py-2 text-sm shadow-sm font-medium tracking-wider border text-white rounded-md hover:bg-indigo-800"
           >
             Save
@@ -155,23 +162,21 @@
   </transition>
 </template>
 
-
 <script>
 import axios from "axios";
-import { createTask } from "../api/task";
-
+import { updateTask } from "../api/task";
 export default {
-  props: ["show", "columnId"],
+  props: ["show", "taskId", "task"],
   emits: ["close"],
 
   data() {
     return {
       form: {
-        task_name: "",
+        taskName: "",
         description: "",
-        column_id: "",
-        tagName: [""],
-        email: [""],
+        columnId: "",
+        tags: [""],
+        members: [""],
       },
       suggestions: [],
       typingTimer: null,
@@ -179,25 +184,28 @@ export default {
     };
   },
 
+  async mounted() {
+    this.loadTask();
+  },
+
   methods: {
     addTag() {
-      this.form.tagName.push("");
+      this.form.tags.push("");
     },
     removeTag(index) {
-      this.form.tagName.splice(index, 1);
+      this.form.tags.splice(index, 1);
     },
-
     addEmail() {
-      this.form.email.push("");
+      this.form.members.push("");
     },
     removeEmail(index) {
-      this.form.email.splice(index, 1);
+      this.form.members.splice(index, 1);
     },
 
     handleInput(index) {
       this.activeEmailIndex = index;
       clearTimeout(this.typingTimer);
-      const val = this.form.email[index];
+      const val = this.form.members[index];
 
       if (val.includes("@")) {
         this.typingTimer = setTimeout(() => {
@@ -225,18 +233,37 @@ export default {
 
     selectUser(selectedEmail) {
       if (this.activeEmailIndex !== null) {
-        this.form.email[this.activeEmailIndex] = selectedEmail;
+        this.form.members[this.activeEmailIndex] = selectedEmail;
       }
       this.suggestions = [];
     },
 
-    async createTask() {
+    async loadTask() {
+      try {
+        console.log("task", this.task);
+        this.form = {
+          taskName: this.task.taskName,
+          description: this.task.description,
+          columnId: this.task.columnId,
+          tags: this.task.tags,
+          members: this.task.members.map((m) => m.email),
+        };
+        console.log(this.form);
+      } catch (error) {
+        console.error(error);
+      }
+    },
+
+    async updateTask() {
       try {
         const token = localStorage.getItem("token");
-        this.form.column_id = this.columnId;
-        await createTask(token, this.form);
-        this.$emit("close");
-        window.location.reload();
+        const response = await updateTask(token, this.taskId, this.form);
+
+        if (response.status === 200) {
+          this.$emit("close");
+        } else {
+          console.log(response.data || "Failed to update task");
+        }
       } catch (error) {
         console.error(error);
       }

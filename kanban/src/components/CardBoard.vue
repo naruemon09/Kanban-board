@@ -90,7 +90,7 @@
         </h5>
 
         <RouterLink
-          :to="`/column/${board.id}`"
+          :to="`/board/${board.id}`"
           class="inline-flex items-center justify-center w-full px-5 py-3 text-sm font-semibold text-white bg-gray-900 rounded-xl hover:bg-gray-800 transition-all duration-300 shadow-md hover:shadow-lg group/view"
         >
           <span>Open Board</span>

@@ -63,3 +63,33 @@ exports.list = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.searchUserByEmail = async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email || email.trim() === "") {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const users = await prisma.user.findMany({
+      where: {
+        email: {
+          startsWith: email,
+        },
+      },
+      select: {
+        id: true,
+        firstname: true,
+        lastname: true,
+        email: true,
+      },
+      take: 10,
+    });
+
+    res.json({ users });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+

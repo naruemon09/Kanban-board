@@ -91,14 +91,14 @@
       </div>
 
       <div
-        class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+        class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
       >
         <div
           v-for="columnItem in column"
           :key="columnItem.id"
-          class="bg-white group relative overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
+          class="bg-white group relative overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 transform"
         >
-          <CardColumn :column="columnItem" @updated="loadColumn" />
+          <CardColumn :column="columnItem" @updatedColumn="loadColumn" />
         </div>
       </div>
     </div>

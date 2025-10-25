@@ -31,7 +31,7 @@ const routes = [
         component: CreateBoard
       },
       {
-        path: "column/:id",
+        path: "board/:id",
         component: Column
       }
     ]
