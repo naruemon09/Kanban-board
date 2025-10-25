@@ -23,6 +23,28 @@
             placeholder="Member@example.com"
           />
 
+          <p v-if="form.email">
+            <span
+              v-if="memberOnBoard.some((m) => m.email === form.email)"
+              class="text-red-500 text-sm mt-1"
+            >
+              This email is already on the board.
+            </span>
+
+            <span
+              v-else-if="
+                form.email.includes('@') &&
+                suggestions.length === 0 &&
+                !memberOnBoard.some((m) => m.email === form.email) &&
+                form.email.trim() !== '' &&
+                !form.email.endsWith('m')
+              "
+              class="text-red-500 text-sm mt-1"
+            >
+              This email does not exist in the system.
+            </span>
+          </p>
+
           <ul
             v-if="suggestions.length > 0"
             class="absolute left-0 right-0 bg-white/90 backdrop-blur-md border border-gray-200 rounded-xl shadow-lg mt-2 max-h-56 overflow-y-auto z-20"
@@ -63,12 +85,11 @@
 </template>
 
 <script>
-import axios from "axios";
-import { addMember } from "../api/user";
+import { addMember, searchUserByEmail } from "../api/user";
 import { toast } from "vue3-toastify";
 
 export default {
-  props: ["show"],
+  props: ["show", "memberOnBoard"],
   emits: ["close"],
 
   data() {
@@ -99,11 +120,8 @@ export default {
     async searchUser(email) {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(
-          `http://localhost:3000/api/user?email=${encodeURIComponent(email)}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
+        const res = await searchUserByEmail(token, email);
+        console.log(res.data);
         this.suggestions = res.data.users || [];
       } catch (err) {
         console.error(err);

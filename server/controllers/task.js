@@ -13,7 +13,7 @@ exports.create = async (req, res) => {
     });
 
     if (Array.isArray(tagName) && tagName.length > 0) {
-      for (const name of tagName) {
+      for (const name of tags) {
         if (!name.trim()) continue;
 
         await prisma.task_Tag.create({

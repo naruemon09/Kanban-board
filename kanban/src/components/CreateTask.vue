@@ -157,8 +157,8 @@
 
 
 <script>
-import axios from "axios";
 import { createTask } from "../api/task";
+import { searchUserByEmailInBoard } from "../api/user";
 
 export default {
   props: ["show", "columnId"],
@@ -211,12 +211,9 @@ export default {
     async searchUser(email) {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(
-          `http://localhost:3000/api/user?email=${encodeURIComponent(email)}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await searchUserByEmailInBoard(token, email, id)
 
-        this.suggestions = res.data.users || [];
+        this.suggestions = res.data.userAll || [];
       } catch (err) {
         console.error(err);
         this.suggestions = [];

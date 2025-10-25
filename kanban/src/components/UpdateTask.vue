@@ -163,8 +163,8 @@
 </template>
 
 <script>
-import axios from "axios";
 import { updateTask } from "../api/task";
+import { searchUserByEmailInBoard } from "../api/user";
 export default {
   props: ["show", "taskId", "task"],
   emits: ["close"],
@@ -219,12 +219,11 @@ export default {
     async searchUser(email) {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(
-          `http://localhost:3000/api/user?email=${encodeURIComponent(email)}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const id = this.$route.params.id;
+        const res = await searchUserByEmailInBoard(token, email, id)
+        console.log(res.data)
 
-        this.suggestions = res.data.users || [];
+        this.suggestions = res.data.userAll || [];
       } catch (err) {
         console.error(err);
         this.suggestions = [];
@@ -240,7 +239,6 @@ export default {
 
     async loadTask() {
       try {
-        console.log("task", this.task);
         this.form = {
           taskName: this.task.taskName,
           description: this.task.description,

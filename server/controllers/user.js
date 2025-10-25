@@ -93,3 +93,47 @@ exports.searchUserByEmail = async (req, res) => {
   }
 };
 
+exports.searchUserByEmailInBoard = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { email } = req.query;
+    if (!email || email.trim() === "") {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const users = await prisma.board_Member.findMany({
+      where: {
+        boardId: Number(id),
+        user: {
+          email: {
+            startsWith: email,
+          },
+        }
+      },
+      select: {
+        user: {
+          select: {
+            id: true,
+            firstname: true,
+            lastname: true,
+            email: true,
+          }
+        }
+      },
+      take: 10,
+    });
+
+    const userAll = users.map(member => ({
+      id: member.user.id,
+      firstname: member.user.firstname,
+      lastname: member.user.lastname,
+      email: member.user.email,
+    }));
+
+    res.json({userAll});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+

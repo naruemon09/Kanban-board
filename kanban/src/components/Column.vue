@@ -103,7 +103,7 @@
       </div>
     </div>
 
-    <AddMember :show="isMemberOpen" @close="closeAddMember" />
+    <AddMember :show="isMemberOpen" @close="closeAddMember" :memberOnBoard="member"/>
     <CreateColumn :show="isColumnOpen" @close="closeAddColumn" />
   </section>
 </template>
