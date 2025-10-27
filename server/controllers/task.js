@@ -229,3 +229,63 @@ exports.update = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.update = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { taskName, description, columnId, tags, members } = req.body;
+
+    const task = await prisma.task.update({
+      where: { id: Number(id) },
+      data: {
+        taskName: taskName,
+        description: description,
+        columnId: columnId,
+      },
+    });
+
+    await prisma.task_Tag.deleteMany({ where: { taskId: task.id } });
+
+    if (Array.isArray(tags) && tags.length > 0) {
+      for (const name of tags) {
+        if (!name.trim()) continue;
+
+        await prisma.task_Tag.create({
+          data: {
+            Task: { connect: { id: task.id } }, 
+            Tag: {
+              connectOrCreate: {
+                where: { tagName: name.trim() }, 
+                create: { tagName: name.trim() }, 
+              },
+            },
+          },
+        });
+      }
+    }
+
+    await prisma.task_Member.deleteMany({ where: { taskId: task.id } });
+
+    if (Array.isArray(members) && members.length > 0) {
+      for (const mail of members) {
+        const user = await prisma.user.findUnique({
+          where: { email: mail },
+        });
+
+        if (user) {
+          await prisma.task_Member.create({
+            data: {
+              taskId: task.id,
+              userId: user.id,
+            },
+          });
+        }
+      }
+    }
+
+    res.json(task);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
