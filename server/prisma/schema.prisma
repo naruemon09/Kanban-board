@@ -19,7 +19,6 @@ model User {
   password    String
   firstname   String
   lastname    String
-  picture     String?
   createdAt   DateTime       @default(now())
   updateAt    DateTime       @updatedAt
   boardMember Board_Member[]

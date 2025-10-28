@@ -80,10 +80,24 @@ exports.remove = async (req, res) => {
       where: {
         id: Number(id),
       },
+      include: {
+        column: {
+          include: {
+            task: {
+              include: {
+                taskMember: true,
+                taskTag: true,
+              },
+            },
+          },
+        },
+        boardMember: true,
+      },
     });
-    res.send(board);
+
+    res.json({ board });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };

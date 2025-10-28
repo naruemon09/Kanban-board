@@ -1,5 +1,5 @@
 <template>
-  <div class="relative overflow-y-auto font-inter bg-gradient-to-br from-gray-50 to-gray-100">
+  <div class="relative overflow-y-auto font-inter ">
     <section class="p-4 sm:p-6 lg:p-8">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
