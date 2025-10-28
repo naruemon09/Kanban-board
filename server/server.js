@@ -24,15 +24,15 @@ const io = new Server(server, {
 app.set("io", io);
 
 io.on("connection", (socket) => {
-  console.log("⚡ User connected:", socket.id);
+  console.log("User connected:", socket.id);
 
   socket.on("join", (userId) => {
     socket.join(`user_${userId}`);
-    console.log(`👤 User ${userId} joined room user_${userId}`);
+    console.log(`User ${userId} joined room user_${userId}`);
   });
 
   socket.on("disconnect", () => {
-    console.log("❌ User disconnected:", socket.id);
+    console.log("User disconnected:", socket.id);
   });
 });
 
@@ -42,5 +42,5 @@ readdirSync('./routes').forEach((file) => {
 });
 
 server.listen(port, () => {
-  console.log(`🚀 Server running on http://localhost:${port}`);
+  console.log(`Server running on http://localhost:${port}`);
 });
