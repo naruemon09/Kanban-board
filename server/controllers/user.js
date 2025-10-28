@@ -22,9 +22,15 @@ exports.create = async (req, res) => {
       data: { boardId: Number(board_id), userId: user.id },
     });
 
+    const board = await prisma.board.findFirst({
+      where: {
+        id: Number(board_id),
+      },
+    });
+
     io.to(`user_${user.id}`).emit("notification:new", {
       userId: user.id,
-      message: `You were added to board #${board_id}`,
+      message: `You were added to board #${board.boardName}`,
       type: "board",
     });
 
@@ -43,9 +49,14 @@ exports.list = async (req, res) => {
       where: { boardId: Number(id) },
     });
 
-    if (members.length === 0) {
-      return res.json([]);
-    }
+    const owner = await prisma.board.findFirst({
+      where: { id: Number(id) },
+    });
+
+    const ownerBoard = await prisma.user.findFirst({
+      where: { id: owner.createdById },
+      select: { id: true, email: true, firstname: true, lastname: true },
+    });
 
     const userIds = members.map((m) => m.userId);
 
@@ -62,7 +73,7 @@ exports.list = async (req, res) => {
       };
     });
 
-    res.json(result);
+    res.json({result , ownerBoard});
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

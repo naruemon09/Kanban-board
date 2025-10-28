@@ -16,7 +16,9 @@
           <h2 class="text-2xl font-bold py-4">Create New Task</h2>
 
           <div class="mb-4 text-left">
-            <label class="block text-gray-700 font-medium mb-1">Task Name</label>
+            <label class="block text-gray-700 font-medium mb-1"
+              >Task Name</label
+            >
             <input
               type="text"
               v-model="form.task_name"
@@ -26,7 +28,9 @@
           </div>
 
           <div class="mb-4 text-left">
-            <label class="block text-gray-700 font-medium mb-1">Description</label>
+            <label class="block text-gray-700 font-medium mb-1"
+              >Description</label
+            >
             <textarea
               v-model="form.description"
               rows="3"
@@ -77,7 +81,9 @@
           </div>
 
           <div class="mb-4 text-left relative">
-            <label class="block text-gray-700 font-medium mb-1">Assign To (Emails)</label>
+            <label class="block text-gray-700 font-medium mb-1"
+              >Assign To (Emails)</label
+            >
             <div
               v-for="(email, index) in form.email"
               :key="index"
@@ -112,6 +118,13 @@
                 </button>
               </div>
 
+                <span
+                  v-if="suggestions.length === 0 "
+                  class="text-red-500 text-sm mt-1"
+                >
+                  This email does not exist in the board.
+                </span>
+
               <ul
                 v-if="suggestions.length > 0 && activeEmailIndex === index"
                 class="absolute left-0 right-0 bg-white/90 backdrop-blur-md border border-gray-200 rounded-xl shadow-lg mt-2 max-h-56 overflow-y-auto z-20"
@@ -122,7 +135,9 @@
                   @click="selectUser(user.email)"
                   class="px-4 py-3 text-left hover:bg-indigo-50 hover:shadow-sm cursor-pointer transition-all duration-200 border-b last:border-b-0 border-gray-100 flex flex-col"
                 >
-                  <span class="text-base font-semibold text-gray-900">{{ user.firstname }} {{ user.lastname }}</span>
+                  <span class="text-base font-semibold text-gray-900"
+                    >{{ user.firstname }} {{ user.lastname }}</span
+                  >
                   <span class="text-sm text-gray-600">{{ user.email }}</span>
                 </li>
               </ul>
@@ -154,7 +169,6 @@
     </div>
   </transition>
 </template>
-
 
 <script>
 import { createTask } from "../api/task";
@@ -211,7 +225,7 @@ export default {
     async searchUser(email) {
       try {
         const token = localStorage.getItem("token");
-        const res = await searchUserByEmailInBoard(token, email, id)
+        const res = await searchUserByEmailInBoard(token, email, id);
 
         this.suggestions = res.data.userAll || [];
       } catch (err) {

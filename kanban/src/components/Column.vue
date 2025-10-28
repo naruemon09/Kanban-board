@@ -32,19 +32,68 @@
         >
           <div>
             <h1 class="text-3xl font-bold text-gray-900 mb-2">
-              {{ board }}
+              {{ board.boardName }}
             </h1>
-            <div class="flex flex-wrap gap-2 mt-3">
-              <div
-                v-for="memberItem in member"
-                :key="memberItem.id"
-                class="relative inline-flex items-center group"
-              >
-                <span
-                  class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
+            <div class="flex items-center gap-10">
+              <div>
+                <p
+                  class="text-lg font-semibold text-gray-700 mb-2 flex items-center gap-2"
                 >
-                  {{ memberItem.firstname }} {{ memberItem.lastname }}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="h-5 w-5 text-indigo-500"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  Board Owner
+                </p>
+                <span
+                  class="px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium shadow-sm"
+                >
+                  {{ owner.firstname }} {{ owner.lastname }}
                 </span>
+              </div>
+              <div>
+                <p
+                  class="text-lg font-semibold text-gray-700 mb-2 flex items-center gap-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="h-6 w-6 text-green-500"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M8.25 6.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM15.75 9.75a3 3 0 1 1 6 0 3 3 0 0 1-6 0ZM2.25 9.75a3 3 0 1 1 6 0 3 3 0 0 1-6 0ZM6.31 15.117A6.745 6.745 0 0 1 12 12a6.745 6.745 0 0 1 6.709 7.498.75.75 0 0 1-.372.568A12.696 12.696 0 0 1 12 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 0 1-.372-.568 6.787 6.787 0 0 1 1.019-4.38Z"
+                      clip-rule="evenodd"
+                    />
+                    <path
+                      d="M5.082 14.254a8.287 8.287 0 0 0-1.308 5.135 9.687 9.687 0 0 1-1.764-.44l-.115-.04a.563.563 0 0 1-.373-.487l-.01-.121a3.75 3.75 0 0 1 3.57-4.047ZM20.226 19.389a8.287 8.287 0 0 0-1.308-5.135 3.75 3.75 0 0 1 3.57 4.047l-.01.121a.563.563 0 0 1-.373.486l-.115.04c-.567.2-1.156.349-1.764.441Z"
+                    />
+                  </svg>
+                  Board Member
+                </p>
+
+                <div class="flex flex-wrap gap-2">
+                  <div
+                    v-for="memberItem in member"
+                    :key="memberItem.id"
+                    class="relative inline-flex items-center group"
+                  >
+                    <span
+                      class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium"
+                    >
+                      {{ memberItem.firstname }} {{ memberItem.lastname }}
+                    </span>
+                  </div>
+                </div>
 
                 <button
                   @click="deleteMember(memberItem)"
@@ -136,6 +185,7 @@ export default {
   data() {
     return {
       board: "",
+      owner: "",
       column: [],
       member: [],
       isMemberOpen: false,
@@ -153,9 +203,10 @@ export default {
         const responseBoard = await readBoard(token, id);
         const responseMember = await listMember(token, id);
         const responseColumn = await listColumn(token, id);
-        console.log(responseMember)
-        this.board = responseBoard.data.boardName;
-        this.member = responseMember.data;
+        console.log(responseMember);
+        this.board = responseBoard.data;
+        this.member = responseMember.data.result;
+        this.owner = responseMember.data.ownerBoard;
         this.column = responseColumn.data;
       } catch (error) {
         console.error(error);
@@ -177,7 +228,11 @@ export default {
     },
 
     async deleteMember(member) {
-      if (!confirm(`Are you sure you want to delete "${member.firstname} ${member.lastname}"?`))
+      if (
+        !confirm(
+          `Are you sure you want to delete "${member.firstname} ${member.lastname}"?`
+        )
+      )
         return;
 
       try {
@@ -187,7 +242,7 @@ export default {
         if (response.status === 200) {
           toast.success("Member deleted successfully! 🗑️");
           this.$emit("updated");
-          window.location.reload()
+          window.location.reload();
         } else {
           toast.error(response.data.errorMessage || "Failed to delete member");
         }

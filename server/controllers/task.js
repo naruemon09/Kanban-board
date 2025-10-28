@@ -1,8 +1,9 @@
-const prisma = require('../config/prisma')
+const prisma = require("../config/prisma");
 
 exports.create = async (req, res) => {
   try {
     const { task_name, description, column_id, tagName, email } = req.body;
+    const io = req.app.get("io");
 
     const task = await prisma.task.create({
       data: {
@@ -13,16 +14,16 @@ exports.create = async (req, res) => {
     });
 
     if (Array.isArray(tagName) && tagName.length > 0) {
-      for (const name of tags) {
+      for (const name of tagName) {
         if (!name.trim()) continue;
 
         await prisma.task_Tag.create({
           data: {
-            Task: { connect: { id: task.id } }, 
+            Task: { connect: { id: task.id } },
             Tag: {
               connectOrCreate: {
-                where: { tagName: name.trim() }, 
-                create: { tagName: name.trim() }, 
+                where: { tagName: name.trim() },
+                create: { tagName: name.trim() },
               },
             },
           },
@@ -43,6 +44,11 @@ exports.create = async (req, res) => {
               userId: user.id,
             },
           });
+          io.to(`user_${user.id}`).emit("notification:new", {
+            userId: user.id,
+            message: `You were added to task #${task_name}`,
+            type: "task",
+          });
         }
       }
     }
@@ -57,17 +63,16 @@ exports.create = async (req, res) => {
   }
 };
 
-
 exports.list = async (req, res) => {
   try {
     const tasks = await prisma.task.findMany({
       include: {
-        taskTag: {        
+        taskTag: {
           include: {
-            Tag: true,    
+            Tag: true,
           },
         },
-        taskMember: {  
+        taskMember: {
           include: {
             user: true,
           },
@@ -75,7 +80,7 @@ exports.list = async (req, res) => {
         column: true,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
@@ -102,17 +107,17 @@ exports.list = async (req, res) => {
 
 exports.read = async (req, res) => {
   try {
-    const { id } = req.params
+    const { id } = req.params;
 
     const tasks = await prisma.task.findFirst({
       where: { id: Number(id) },
       include: {
-        taskTag: {        
+        taskTag: {
           include: {
-            Tag: true,    
+            Tag: true,
           },
         },
-        taskMember: {  
+        taskMember: {
           include: {
             user: true,
           },
@@ -120,7 +125,7 @@ exports.read = async (req, res) => {
         column: true,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
@@ -149,11 +154,11 @@ exports.remove = async (req, res) => {
   try {
     const { id } = req.params;
 
-    await prisma.task_Tag.deleteMany({ 
-      where: { taskId: Number(id) } 
+    await prisma.task_Tag.deleteMany({
+      where: { taskId: Number(id) },
     });
-    await prisma.task_Member.deleteMany({ 
-      where: { taskId: Number(id) } 
+    await prisma.task_Member.deleteMany({
+      where: { taskId: Number(id) },
     });
 
     const task = await prisma.task.delete({
@@ -192,11 +197,11 @@ exports.update = async (req, res) => {
 
         await prisma.task_Tag.create({
           data: {
-            Task: { connect: { id: task.id } }, 
+            Task: { connect: { id: task.id } },
             Tag: {
               connectOrCreate: {
-                where: { tagName: name.trim() }, 
-                create: { tagName: name.trim() }, 
+                where: { tagName: name.trim() },
+                create: { tagName: name.trim() },
               },
             },
           },
