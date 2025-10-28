@@ -1,9 +1,7 @@
 <template>
   <div class="bg-white rounded-lg shadow-sm p-4 relative flex flex-col h-full">
-
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-2 w-full">
-
         <template v-if="column.isEditing">
           <div class="flex gap-2 w-full">
             <input
@@ -45,7 +43,10 @@
         <template v-else>
           <h2 class="text-lg font-semibold text-gray-800">
             {{ column.columnName }}
-            <span class="px-2 py-1 ml-2 text-sm text-gray-500 bg-gray-200 rounded-3xl">{{ task.length }}</span>
+            <span
+              class="px-2 py-1 ml-2 text-sm text-gray-500 bg-gray-200 rounded-3xl"
+              >{{ task.length }}</span
+            >
           </h2>
 
           <div class="ml-auto flex gap-2">
@@ -92,14 +93,20 @@
       </div>
     </div>
 
-    <div class="space-y-3 flex-1">
-      <CardTask
-        v-for="taskItem in task"
-        :key="taskItem.id"
-        :task="taskItem"
-        @updated="loadTask"
-      />
-    </div>
+    <draggable
+      v-model="task"
+      group="tasks"
+      item-key="id"
+      :animation="200"
+      @change="onChange"
+      class="space-y-3 flex-1 min-h-[100px]"
+    >
+      <template #item="{ element }">
+        <div>
+          <CardTask :task="element" @updated="loadTask" />
+        </div>
+      </template>
+    </draggable>
 
     <button
       @click="onToggle(column.id)"
@@ -123,31 +130,32 @@
 
     <CreateTask :show="isOpen" @close="onClose" :columnId="selectedColumnId" />
   </div>
- 
 </template>
 
 <script>
 import { removeColumn, updateColumn } from "../api/column";
 import { toast } from "vue3-toastify";
-import { listTask } from "../api/task";
+import { listTask, moveTask } from "../api/task";
 import CreateTask from "./CreateTask.vue";
 import CardTask from "./CardTask.vue";
+import draggable from "vuedraggable";
 
 export default {
   props: ["column"],
   emits: ["updatedColumn"],
-  components: { CreateTask , CardTask },
+  components: { CreateTask, CardTask, draggable },
 
   data() {
     return {
       isOpen: false,
       selectedColumnId: null,
       task: [],
+      drag: false,
     };
   },
 
   async mounted() {
-    this.loadTask();
+    await this.loadTask();
   },
 
   methods: {
@@ -166,9 +174,22 @@ export default {
       this.isOpen = true;
     },
 
-    onClose() {
+    async onClose() {
       this.isOpen = false;
-      this.loadTask();
+      await this.loadTask();
+    },
+
+    async onChange(evt) {
+      console.log("Change event:", evt);
+      
+      if (evt.added) {
+        const movedTask = evt.added.element;
+        const newColumnId = this.column.id;
+        
+        if (movedTask.columnId !== newColumnId) {
+          await this.MoveTask(movedTask.id, newColumnId);
+        }
+      }
     },
 
     async saveEdit(column) {
@@ -181,7 +202,7 @@ export default {
         if (response.status === 200) {
           column.columnName = column.newName;
           column.isEditing = false;
-          toast.success("Column updated successfully! 🎉");
+          toast.success("Column updated successfully!");
           this.$emit("updatedColumn");
         } else {
           toast.error(response.data.errorMessage || "Failed to update column");
@@ -216,12 +237,36 @@ export default {
       try {
         const token = localStorage.getItem("token");
         const response = await listTask(token);
-        this.task = response.data.filter(t => t.columnId === this.column.id);
-        console.log(response)
+        this.task = response.data.filter((t) => t.columnId === this.column.id);
       } catch (error) {
         console.error(error);
+      }
+    },
+
+    async MoveTask(taskId, newColumnId) {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await moveTask(token, taskId, {columnId:newColumnId});
+
+        if (response.status === 200) {
+          toast.success("Task moved successfully!");
+          this.$emit("updatedColumn");
+        } else {
+          toast.error("Failed to move task");
+          await this.loadTask();
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to move task. Please try again.");
+        await this.loadTask();
       }
     },
   },
 };
 </script>
+
+<style scoped>
+.flip-list-move {
+  transition: transform 0.3s;
+}
+</style>

@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'rounded-lg p-4 shadow-sm border-l-4 transition-transform transform hover:scale-[1.02]',
+      'rounded-lg p-4 shadow-sm border-l-4 transition-all duration-200 transform hover:scale-[1.02] cursor-move group',
       bgColor,
       borderColor,
     ]"
@@ -102,6 +102,7 @@ import { removeTask } from "../api/task";
 
 export default {
   props: ["task"],
+  emits: ["updated"],
   components: { UpdateTask },
 
   data() {
@@ -137,7 +138,7 @@ export default {
 
     onClose() {
       this.isOpen = false;
-      this.loadTask();
+      this.$emit("updated");
     },
 
     async deleteTask(task) {
@@ -150,15 +151,28 @@ export default {
 
         if (response.status === 200) {
           toast.success("Task deleted successfully! 🗑️");
-          window.location.reload();
+          this.$emit("updated");
         } else {
-          toast.error(response.data.errorMessage || "Failed to delete board");
+          toast.error(response.data.errorMessage || "Failed to delete task");
         }
       } catch (error) {
         console.error(error);
-        toast.error("Failed to delete board. Please try again.");
+        toast.error("Failed to delete task. Please try again.");
       }
     },
   },
 };
 </script>
+
+<style scoped>
+.sortable-ghost {
+  opacity: 0.5;
+  background: #f3f4f6;
+  border: 2px dashed #9ca3af;
+}
+
+.sortable-drag {
+  opacity: 0.8;
+  transform: rotate(3deg);
+}
+</style>

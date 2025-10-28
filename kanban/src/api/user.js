@@ -31,3 +31,19 @@ export const searchUserByEmailInBoard = async (token , form , id) => {
     },
   });
 };
+
+export const notifications = async (token) => {
+  return await axios.get(`http://localhost:3000/api/notification`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const removeMember = async (token, id) => {
+  return await axios.delete(`http://localhost:3000/api/deleteMember/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};

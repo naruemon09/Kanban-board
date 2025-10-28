@@ -1,6 +1,6 @@
 <template>
-  <section class="min-h-screen bg-gradient-to-br">
-    <div class="max-w-7xl mx-auto mb-8">
+  <section class="bg-gradient-to-br">
+    <div class="max-w-7xl mx-auto">
       <div class="mb-3">
         <RouterLink
           to="/board"
@@ -35,12 +35,24 @@
               {{ board }}
             </h1>
             <div class="flex flex-wrap gap-2 mt-3">
-              <div v-for="memberItem in member" :key="memberItem.id">
+              <div
+                v-for="memberItem in member"
+                :key="memberItem.id"
+                class="relative inline-flex items-center group"
+              >
                 <span
                   class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
                 >
                   {{ memberItem.firstname }} {{ memberItem.lastname }}
                 </span>
+
+                <button
+                  @click="deleteMember(memberItem)"
+                  class="absolute -right-2 -top-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow opacity-0 group-hover:opacity-100 transition"
+                  title="Remove Member"
+                >
+                  ×
+                </button>
               </div>
             </div>
           </div>
@@ -90,9 +102,7 @@
         </div>
       </div>
 
-      <div
-        class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
+      <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
           v-for="columnItem in column"
           :key="columnItem.id"
@@ -103,7 +113,11 @@
       </div>
     </div>
 
-    <AddMember :show="isMemberOpen" @close="closeAddMember" :memberOnBoard="member"/>
+    <AddMember
+      :show="isMemberOpen"
+      @close="closeAddMember"
+      :memberOnBoard="member"
+    />
     <CreateColumn :show="isColumnOpen" @close="closeAddColumn" />
   </section>
 </template>
@@ -114,7 +128,8 @@ import CardColumn from "./CardColumn.vue";
 import AddMember from "./AddMember.vue";
 import { readBoard } from "../api/board";
 import { listColumn } from "../api/column";
-import { listMember } from "../api/user";
+import { listMember, removeMember } from "../api/user";
+import { toast } from "vue3-toastify";
 
 export default {
   components: { CreateColumn, CardColumn, AddMember },
@@ -138,7 +153,7 @@ export default {
         const responseBoard = await readBoard(token, id);
         const responseMember = await listMember(token, id);
         const responseColumn = await listColumn(token, id);
-
+        console.log(responseMember)
         this.board = responseBoard.data.boardName;
         this.member = responseMember.data;
         this.column = responseColumn.data;
@@ -159,6 +174,27 @@ export default {
     closeAddColumn() {
       this.isColumnOpen = false;
       this.loadColumn();
+    },
+
+    async deleteMember(member) {
+      if (!confirm(`Are you sure you want to delete "${member.firstname} ${member.lastname}"?`))
+        return;
+
+      try {
+        const token = localStorage.getItem("token");
+        const response = await removeMember(token, member.memberId);
+
+        if (response.status === 200) {
+          toast.success("Member deleted successfully! 🗑️");
+          this.$emit("updated");
+          window.location.reload()
+        } else {
+          toast.error(response.data.errorMessage || "Failed to delete member");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to delete member. Please try again.");
+      }
     },
   },
 };

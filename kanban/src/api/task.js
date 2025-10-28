@@ -39,3 +39,11 @@ export const updateTask = async (token, id, form) => {
     },
   });
 };
+
+export const moveTask = async (token, id, form) => {
+  return await axios.put(`http://localhost:3000/api/moveTask/${id}`, form, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};

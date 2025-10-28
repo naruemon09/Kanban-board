@@ -5,6 +5,7 @@ import Board from "./components/Board.vue";
 import CreateBoard from "./components/CreateBoard.vue";
 import Column from "./components/Column.vue";
 import Navbar from "./components/Navbar.vue";
+import { currentUser } from "./api/auth";
 
 const routes = [
 
@@ -20,7 +21,7 @@ const routes = [
   {
     path: "/",
     component: Navbar,
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
     children: [
       {
         path: "board",
@@ -33,7 +34,7 @@ const routes = [
       {
         path: "board/:id",
         component: Column
-      }
+      },
     ]
   }
 ];
@@ -43,16 +44,29 @@ const router = createRouter({
   routes
 });
 
-// router.beforeEach((to, from, next) => {
-//   const user = localStorage.getItem('User');
-  
-//   if (to.meta.requiresAuth && !user) {
-//     next('/');
-//   } else if (to.path === '/' && user) {
-//     next('/board');
-//   } else {
-//     next();
-//   }
-// });
+router.beforeEach(async (to, from, next) => {
+  const token = localStorage.getItem("token");
+
+  if (to.meta.requiresAuth) {
+    if (!token) {
+      return next("/");
+    }
+
+    try {
+      await currentUser(token);
+      return next();          
+    } catch (err) {
+      localStorage.removeItem('token'); 
+      localStorage.removeItem('User'); 
+      return next("/");
+    }
+  }
+
+  if (to.path === "/" && token) {
+    return next("/board");
+  }
+
+  next();
+});
 
 export default router;

@@ -26,13 +26,34 @@ exports.create = async (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const board = await prisma.board.findMany({
-      where: { createdById: Number(req.user.id) },
+    const ownBoards = await prisma.board.findMany({
+      where: { createdById: req.user.id },
+      select: {
+        id: true,
+        boardName: true,
+      },
     });
 
-    res.json(board);
+    const memberBoards = await prisma.board_Member.findMany({
+      where: { userId: req.user.id },
+      include: {
+        board: {
+          select: {
+            id: true,
+            boardName: true,
+          },
+        },
+      },
+    });
+
+    const allBoards = [
+      ...ownBoards,
+      ...memberBoards.map((m) => m.board),
+    ];
+
+    res.json(allBoards);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };

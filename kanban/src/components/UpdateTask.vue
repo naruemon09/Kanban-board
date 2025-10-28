@@ -221,8 +221,6 @@ export default {
         const token = localStorage.getItem("token");
         const id = this.$route.params.id;
         const res = await searchUserByEmailInBoard(token, email, id)
-        console.log(res.data)
-
         this.suggestions = res.data.userAll || [];
       } catch (err) {
         console.error(err);
@@ -246,7 +244,6 @@ export default {
           tags: this.task.tags,
           members: this.task.members.map((m) => m.email),
         };
-        console.log(this.form);
       } catch (error) {
         console.error(error);
       }
