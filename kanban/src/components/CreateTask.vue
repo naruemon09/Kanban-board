@@ -118,12 +118,17 @@
                 </button>
               </div>
 
-                <span
-                  v-if="suggestions.length === 0 "
-                  class="text-red-500 text-sm mt-1"
-                >
-                  This email does not exist in the board.
-                </span>
+              <span
+                v-if="
+                  form.email[index].includes('@') &&
+                  suggestions.length === 0 &&
+                  form.email[index].trim() !== '' &&
+                  !form.email[index].endsWith('m') 
+                "
+                class="text-red-500 text-sm mt-1"
+              >
+                This email does not exist in the board.
+              </span>
 
               <ul
                 v-if="suggestions.length > 0 && activeEmailIndex === index"
